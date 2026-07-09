@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>U — Una IA que se vuelve tuya</title>
   <meta name="description" content="U es un asistente personal de IA que aprende tus hábitos, recuerda tus gustos y se adapta a ti. Descarga la versión inicial." />
   <meta name="theme-color" content="#edeff4" />
@@ -14,6 +14,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://github.com" />
+  <link rel="preconnect" href="https://raw.githubusercontent.com" />
+  <link rel="preload" as="image"
+    href="https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.jpg" />
   <link
     href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,200..600&family=IBM+Plex+Mono:wght@400&family=Instrument+Serif:ital@1&display=swap"
     rel="stylesheet"
@@ -31,8 +35,9 @@
       }
       .bg-layer:first-child {
         opacity: 1 !important;
-        background-image: url("https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.png") !important;
+        background-image: url("https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.jpg") !important;
       }
+      .bg-waves, .bg-glow { display: none !important; }
     </style>
   </noscript>
 </head>
@@ -45,15 +50,20 @@
     <div class="loader-track" aria-hidden="true"><span class="loader-fill" id="loaderFill"></span></div>
   </div>
 
-  <!-- Fondo vivo: secuencia de imágenes en crossfade lento.
-       Los frames se configuran en js/config.js (BG_IMAGES). -->
+  <!-- Fondo vivo por capas: base en crossfade + ondas reactivas
+       al mouse + glow integrado. Frames en js/config.js (BG_IMAGES). -->
   <div class="backdrop" aria-hidden="true">
-    <div class="bg-parallax">
+    <div class="bg-depth">
       <div class="bg-breathe">
         <div class="bg-layer"></div>
         <div class="bg-layer"></div>
       </div>
     </div>
+    <div class="bg-waves">
+      <div class="bg-wave"></div>
+      <div class="bg-wave bg-wave--b"></div>
+    </div>
+    <div class="bg-glow"></div>
     <div class="veil"></div>
   </div>
   <div class="grain" aria-hidden="true"></div>
@@ -76,7 +86,7 @@
       </p>
 
       <div class="actions reveal d3">
-        <a class="cta" data-download href="https://github.com/joseph1356k/landing-descargas/raw/main/downloads/you-0.37.apk" download>
+        <a class="cta" data-download href="https://github.com/joseph1356k/landing-descargas/raw/main/downloads/U-0.37.apk" download="U-0.37.apk">
           <span class="cta-label">Descargar U</span>
           <span class="cta-arrow" aria-hidden="true">↓</span>
         </a>
@@ -108,7 +118,7 @@
       <p class="closing">Cuanto más vives con ella, <em>más tuya se vuelve.</em></p>
 
       <div class="actions memory-actions">
-        <a class="cta" data-download href="https://github.com/joseph1356k/landing-descargas/raw/main/downloads/you-0.37.apk" download>
+        <a class="cta" data-download href="https://github.com/joseph1356k/landing-descargas/raw/main/downloads/U-0.37.apk" download="U-0.37.apk">
           <span class="cta-label">Descargar U</span>
           <span class="cta-arrow" aria-hidden="true">↓</span>
         </a>

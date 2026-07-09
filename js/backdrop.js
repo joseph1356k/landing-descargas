@@ -1,14 +1,19 @@
 // ============================================================
-//  backdrop.js — fondo vivo por secuencia de imágenes
+//  backdrop.js — fondo vivo por capas, reactivo al mouse
 //
-//  Dos capas que se funden lentamente entre "frames". Cada
-//  frame combina una imagen de la secuencia con una variante
-//  de encuadre (espejo, zoom y paneo sutil), de modo que:
-//   · con varias imágenes, el humo evoluciona frame a frame;
-//   · con una sola, las variantes bastan para que respire;
-//   · el loop siempre cierra sin salto.
+//  Capas (de atrás hacia adelante):
+//   1. Base (.bg-depth > .bg-layer ×2): la secuencia en
+//      crossfade lento. Se mueve apenas con el mouse.
+//   2. Ondas (.bg-wave ×2): la misma imagen duplicada con
+//      blend "screen" y una máscara que abre un hueco en el
+//      centro — la esfera queda estable y solo el humo lateral
+//      reacciona. Se desplazan, se inclinan y se elevan con
+//      el cursor, cada una con intensidad y sentido distintos.
+//   3. Glow (.bg-glow): campo de luz integrado por blend,
+//      sigue al cursor con inercia rápida.
 //
-//  Nada brusco: fundidos largos, deriva lenta, esfera estable.
+//  Todo con lerp en un solo rAF que se apaga al asentarse.
+//  En touch / reduced-motion solo queda el loop base.
 // ============================================================
 
 import { BG_IMAGES, BG_HOLD_MS, BG_FADE_MS } from "./config.js";
@@ -16,8 +21,8 @@ import { BG_IMAGES, BG_HOLD_MS, BG_FADE_MS } from "./config.js";
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
 
-// Encuadres por los que rota la secuencia. La esfera está al
-// centro de las imágenes, así que el espejo no la mueve.
+// Encuadres por los que rota la secuencia base. La esfera está
+// al centro de las imágenes, así que el espejo no la mueve.
 const VARIANTS = [
   { flip: false, s: 1.02, x: 0,    y: 0    },
   { flip: true,  s: 1.07, x: 0.8,  y: -0.6 },
@@ -25,7 +30,8 @@ const VARIANTS = [
   { flip: true,  s: 1.05, x: 0.5,  y: 0.8  },
 ];
 
-const DRIFT = 0.05; // cuánto crece el zoom mientras un frame está visible
+const DRIFT = 0.05;      // crecimiento del zoom mientras un frame está visible
+const IDLE_MS = 3200;    // sin mouse → las ondas se relajan a su reposo
 
 function transformOf(v, extraScale = 0) {
   const flip = v.flip ? " scaleX(-1)" : "";
@@ -34,7 +40,10 @@ function transformOf(v, extraScale = 0) {
 
 export function createBackdrop(root) {
   const layers = [...root.querySelectorAll(".bg-layer")];
-  const parallax = root.querySelector(".bg-parallax");
+  const depth  = root.querySelector(".bg-depth");
+  const waves  = [...root.querySelectorAll(".bg-wave")];
+  const glow   = root.querySelector(".bg-glow");
+
   let timer = 0;
   let step = 0;
   let active = 0;
@@ -54,6 +63,8 @@ export function createBackdrop(root) {
   const frameCount = Math.max(BG_IMAGES.length, VARIANTS.length);
   const imageAt = (i) => BG_IMAGES[i % BG_IMAGES.length];
   const variantAt = (i) => VARIANTS[i % VARIANTS.length];
+
+  // ---------- loop de la secuencia base ----------
 
   function showFrame(i, instant = false) {
     const layer = layers[active];
@@ -100,9 +111,9 @@ export function createBackdrop(root) {
     timer = 0;
   }
 
-  // primer frame en cuanto haya imagen
-  ready.then(() => {
+  ready.then((src) => {
     showFrame(0, true);
+    for (const w of waves) w.style.backgroundImage = `url("${src}")`;
     start();
   });
 
@@ -116,27 +127,75 @@ export function createBackdrop(root) {
     start();
   });
 
-  // --- parallax sutil con el mouse ---
-  if (hoverable.matches && !reduced.matches && parallax) {
-    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
-    const MAX = 9; // px de desplazamiento máximo
+  // ---------- reactividad al mouse ----------
+  //  Posición normalizada (-1..1) desde el centro → cada capa
+  //  responde con su propia intensidad, rotación e inercia.
 
-    const tick = () => {
-      cx += (tx - cx) * 0.045;
-      cy += (ty - cy) * 0.045;
-      parallax.style.transform = `translate3d(${cx.toFixed(2)}px, ${cy.toFixed(2)}px, 0)`;
-      if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.05) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        raf = 0;
+  if (hoverable.matches && !reduced.matches) {
+    const cur = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
+    const tgt = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
+    let raf = 0;
+    let lastMove = 0;
+    let glowOn = false;
+
+    const apply = () => {
+      // base: profundidad mínima, opuesta al cursor
+      depth.style.transform =
+        `translate3d(${(cur.nx * -7).toFixed(2)}px, ${(cur.ny * -5).toFixed(2)}px, 0)`;
+
+      // ondas: se desplazan y se inclinan hacia el cursor;
+      // mouse arriba → el humo se eleva (ny negativo amplificado)
+      const [a, b] = waves;
+      if (a) {
+        a.style.transform =
+          `translate3d(${(cur.nx * 26).toFixed(2)}px, ${(cur.ny * 20).toFixed(2)}px, 0) ` +
+          `rotate(${(cur.nx * 0.8).toFixed(3)}deg) scale(1.06)`;
+      }
+      if (b) {
+        b.style.transform =
+          `translate3d(${(cur.nx * -20).toFixed(2)}px, ${(cur.ny * 28).toFixed(2)}px, 0) ` +
+          `rotate(${(cur.nx * -0.55).toFixed(3)}deg) scale(1.12) scaleX(-1)`;
+      }
+
+      if (glow) {
+        glow.style.transform =
+          `translate3d(${cur.gx.toFixed(1)}px, ${cur.gy.toFixed(1)}px, 0) translate(-50%, -50%)`;
+        glow.style.opacity = glowOn ? "0.5" : "0";
       }
     };
 
+    const tick = () => {
+      const idle = performance.now() - lastMove > IDLE_MS;
+      if (idle) { tgt.nx = 0; tgt.ny = 0; glowOn = false; } // relajación
+
+      cur.nx += (tgt.nx - cur.nx) * 0.055;
+      cur.ny += (tgt.ny - cur.ny) * 0.055;
+      cur.gx += (tgt.gx - cur.gx) * 0.12;
+      cur.gy += (tgt.gy - cur.gy) * 0.12;
+      apply();
+
+      const settled =
+        idle &&
+        Math.abs(tgt.nx - cur.nx) + Math.abs(tgt.ny - cur.ny) < 0.001 &&
+        Math.abs(tgt.gx - cur.gx) + Math.abs(tgt.gy - cur.gy) < 0.3;
+      raf = settled ? 0 : requestAnimationFrame(tick); // se apaga al asentarse
+    };
+
     addEventListener("pointermove", (e) => {
-      tx = (e.clientX / innerWidth - 0.5) * -2 * MAX;
-      ty = (e.clientY / innerHeight - 0.5) * -2 * MAX;
+      tgt.nx = (e.clientX / innerWidth) * 2 - 1;
+      tgt.ny = (e.clientY / innerHeight) * 2 - 1;
+      tgt.gx = e.clientX;
+      tgt.gy = e.clientY;
+      lastMove = performance.now();
+      glowOn = true;
       if (!raf) raf = requestAnimationFrame(tick);
     }, { passive: true });
+
+    // si el cursor sale de la ventana, todo vuelve a reposo
+    document.documentElement.addEventListener("pointerleave", () => {
+      lastMove = 0;
+      if (!raf) raf = requestAnimationFrame(tick);
+    });
   }
 
   return { ready, destroy: stop };

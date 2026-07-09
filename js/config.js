@@ -8,7 +8,7 @@
 // El binario vive en /downloads del repo; se sirve desde GitHub
 // para no inflar el deploy de Vercel.
 export const DOWNLOAD_URL =
-  "https://github.com/joseph1356k/landing-descargas/raw/main/downloads/you-0.37.apk";
+  "https://github.com/joseph1356k/landing-descargas/raw/main/downloads/U-0.37.apk";
 
 // Nombre del producto — aparece en el botón y el wordmark.
 export const APP_NAME = "U";
@@ -24,7 +24,7 @@ export const LOADER_WORDS = ["despertando", "aprendiendo", "listo"];
 //  assets/bg/ y usa su URL de GitHub raw para producción.
 // ------------------------------------------------------------
 export const BG_IMAGES = [
-  "https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.png",
+  "https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.jpg",
 ];
 
 // Cuánto se sostiene cada frame y cuánto dura el fundido (ms).
