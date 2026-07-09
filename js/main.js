@@ -28,17 +28,9 @@ for (const a of ctas) {
   a.addEventListener("pointerleave", () => presence.blur());
 }
 
-// Texto pequeño según sistema operativo (mejora progresiva)
+// Texto pequeño junto al botón
 const fine = document.getElementById("finePrint");
-if (fine) {
-  let os = null;
-  try {
-    const p = navigator.userAgentData?.platform || navigator.platform || "";
-    if (/mac/i.test(p)) os = "macOS";
-    else if (/win/i.test(p)) os = "Windows";
-  } catch { /* sin detección, texto por defecto */ }
-  fine.textContent = os ? `Versión inicial · para ${os}` : FINE_PRINT_DEFAULT;
-}
+if (fine) fine.textContent = FINE_PRINT_DEFAULT;
 
 // ---------- pantalla de carga ----------
 const loader  = document.getElementById("loader");
