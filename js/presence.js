@@ -73,8 +73,8 @@ export function createPresence(canvas) {
       warm: Math.random() < 0.28,
     }));
 
-    orb.x = orb.tx = w * 0.66;
-    orb.y = orb.ty = h * 0.42;
+    orb.x = orb.tx = w * 0.5;
+    orb.y = orb.ty = h * 0.38;
     orb.r = Math.min(w, h) * 0.15;
 
     if (reduced.matches) drawStatic();
@@ -150,8 +150,8 @@ export function createPresence(canvas) {
     if (focus)                      { orb.tx = focus.x;  orb.ty = focus.y; }
     else if (ptr.active && !idle)   { orb.tx = ptr.x;    orb.ty = ptr.y;   }
     else { // deambula sola, con calma
-      orb.tx = w * (0.64 + 0.13 * Math.sin(t * 0.11));
-      orb.ty = h * (0.40 + 0.12 * Math.sin(t * 0.073 + 1.7));
+      orb.tx = w * (0.50 + 0.14 * Math.sin(t * 0.11));
+      orb.ty = h * (0.36 + 0.11 * Math.sin(t * 0.073 + 1.7));
     }
     orb.x += (orb.tx - orb.x) * 0.028;
     orb.y += (orb.ty - orb.y) * 0.030;
@@ -186,7 +186,7 @@ export function createPresence(canvas) {
   function drawStatic() {
     ctx.clearRect(0, 0, w, h);
     ctx.globalCompositeOperation = "screen";
-    drawOrb(w * 0.66, h * 0.42, false);
+    drawOrb(w * 0.5, h * 0.38, false);
     drawDust(false);
   }
 
