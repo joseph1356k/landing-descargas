@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>U — Una IA que se vuelve tuya</title>
+  <meta name="description" content="U es un asistente personal de IA que aprende tus hábitos, recuerda tus gustos y se adapta a ti. Descarga la versión inicial." />
+  <meta name="theme-color" content="#0b0910" />
+  <meta property="og:title" content="U — Una IA que se vuelve tuya" />
+  <meta property="og:description" content="Aprende tus hábitos, recuerda tus gustos y cada día necesita menos para ayudarte más." />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,200..600&family=IBM+Plex+Mono:wght@400&family=Instrument+Serif:ital@1&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <noscript>
+    <style>
+      #loader { display: none !important; }
+      body.is-loading { overflow: auto !important; }
+      body.is-loading .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .memory .eyebrow, .memory .day, .memory .closing, .memory .memory-actions {
+        opacity: 1 !important; transform: none !important; filter: none !important;
+      }
+    </style>
+  </noscript>
+</head>
+
+<body class="is-loading">
+  <!-- Pantalla de carga: un punto de luz que despierta -->
+  <div class="loader" id="loader" role="status" aria-live="polite" aria-label="Cargando">
+    <div class="loader-core" aria-hidden="true"></div>
+    <p class="loader-word" id="loaderWord">despertando</p>
+    <div class="loader-track" aria-hidden="true"><span class="loader-fill" id="loaderFill"></span></div>
+  </div>
+
+  <!-- Fondo vivo. Para usar un video o imagen en su lugar:
+       comenta el <canvas> y descomenta el <video> (clase .backdrop-media) -->
+  <div class="backdrop" aria-hidden="true">
+    <canvas id="presence"></canvas>
+    <!-- <video class="backdrop-media" src="assets/fondo.mp4" autoplay muted loop playsinline></video> -->
+    <div class="vignette"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top reveal d1">
+    <a class="wordmark" href="#" aria-label="U, inicio">U<span class="wordmark-dot">·</span></a>
+    <span class="build mono">acceso anticipado · v0.1</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 class="title reveal d1">
+        <span class="title-line">Una IA que</span>
+        <span class="title-line">se vuelve <em>tuya.</em></span>
+      </h1>
+
+      <p class="sub reveal d2">
+        Aprende tus hábitos, recuerda tus gustos y entiende cómo haces las cosas.
+        Cada día necesita menos para ayudarte más.
+      </p>
+
+      <div class="actions reveal d3">
+        <a class="cta" data-download href="downloads/app.zip" download>
+          <span class="cta-label">Descargar U</span>
+          <span class="cta-arrow" aria-hidden="true">↓</span>
+        </a>
+        <span class="fine mono" id="finePrint">Versión inicial · early users</span>
+      </div>
+
+      <a class="scroll-cue reveal d4" href="#memoria" aria-label="Ver cómo aprende">
+        <span class="cue-line" aria-hidden="true"></span>
+      </a>
+    </section>
+
+    <section class="memory" id="memoria">
+      <p class="eyebrow mono">memoria viva</p>
+
+      <ol class="days">
+        <li class="day">
+          <span class="day-when">día 1</span>
+          <span class="day-what">Llega sin saber nada de ti.</span>
+        </li>
+        <li class="day">
+          <span class="day-when">día 7</span>
+          <span class="day-what">Ya conoce tus rutinas.</span>
+        </li>
+        <li class="day">
+          <span class="day-when">día 30</span>
+          <span class="day-what">Se adelanta a lo que necesitas.</span>
+        </li>
+      </ol>
+
+      <p class="closing">Cuanto más vives con ella, <em>más tuya se vuelve.</em></p>
+
+      <div class="actions memory-actions">
+        <a class="cta" data-download href="downloads/app.zip" download>
+          <span class="cta-label">Descargar U</span>
+          <span class="cta-arrow" aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span class="mono">© <span id="year">2026</span> U</span>
+    <span class="mono">hecha para adaptarse a ti</span>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
