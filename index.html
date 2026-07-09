@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>U — Una IA que se vuelve tuya</title>
   <meta name="description" content="U es un asistente personal de IA que aprende tus hábitos, recuerda tus gustos y se adapta a ti. Descarga la versión inicial." />
-  <meta name="theme-color" content="#0b0910" />
+  <meta name="theme-color" content="#edeff4" />
   <meta property="og:title" content="U — Una IA que se vuelve tuya" />
   <meta property="og:description" content="Aprende tus hábitos, recuerda tus gustos y cada día necesita menos para ayudarte más." />
   <meta property="og:type" content="website" />
@@ -29,24 +29,32 @@
       .memory .eyebrow, .memory .day, .memory .closing, .memory .memory-actions {
         opacity: 1 !important; transform: none !important; filter: none !important;
       }
+      .bg-layer:first-child {
+        opacity: 1 !important;
+        background-image: url("https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.png") !important;
+      }
     </style>
   </noscript>
 </head>
 
 <body class="is-loading">
-  <!-- Pantalla de carga: un punto de luz que despierta -->
+  <!-- Pantalla de carga: vidrio esmerilado sobre el fondo despertando -->
   <div class="loader" id="loader" role="status" aria-live="polite" aria-label="Cargando">
     <div class="loader-core" aria-hidden="true"></div>
     <p class="loader-word" id="loaderWord">despertando</p>
     <div class="loader-track" aria-hidden="true"><span class="loader-fill" id="loaderFill"></span></div>
   </div>
 
-  <!-- Fondo vivo. Para usar un video o imagen en su lugar:
-       comenta el <canvas> y descomenta el <video> (clase .backdrop-media) -->
+  <!-- Fondo vivo: secuencia de imágenes en crossfade lento.
+       Los frames se configuran en js/config.js (BG_IMAGES). -->
   <div class="backdrop" aria-hidden="true">
-    <canvas id="presence"></canvas>
-    <!-- <video class="backdrop-media" src="assets/fondo.mp4" autoplay muted loop playsinline></video> -->
-    <div class="vignette"></div>
+    <div class="bg-parallax">
+      <div class="bg-breathe">
+        <div class="bg-layer"></div>
+        <div class="bg-layer"></div>
+      </div>
+    </div>
+    <div class="veil"></div>
   </div>
   <div class="grain" aria-hidden="true"></div>
 
@@ -72,7 +80,6 @@
           <span class="cta-label">Descargar U</span>
           <span class="cta-arrow" aria-hidden="true">↓</span>
         </a>
-        <span class="fine mono" id="finePrint">Versión inicial · early users</span>
       </div>
 
       <a class="scroll-cue reveal d4" href="#memoria" aria-label="Ver cómo aprende">

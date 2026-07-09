@@ -1,17 +1,17 @@
 // ============================================================
 //  main.js — orquestación de la landing
-//  Loader → revelado del hero → presencia viva → CTA magnético
+//  Loader → fondo vivo → revelado del hero → CTA magnético
 // ============================================================
 
-import { DOWNLOAD_URL, APP_NAME, FINE_PRINT_DEFAULT, LOADER_WORDS } from "./config.js";
-import { createPresence } from "./presence.js";
+import { DOWNLOAD_URL, APP_NAME, LOADER_WORDS } from "./config.js";
+import { createBackdrop } from "./backdrop.js";
 
 const reduced  = matchMedia("(prefers-reduced-motion: reduce)");
 const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- fondo vivo ----------
-const presence = createPresence(document.getElementById("presence"));
+const backdrop = createBackdrop(document.querySelector(".backdrop"));
 
 // ---------- descarga ----------
 const ctas = [...document.querySelectorAll("[data-download]")];
@@ -19,18 +19,7 @@ for (const a of ctas) {
   a.href = DOWNLOAD_URL;
   const label = a.querySelector(".cta-label");
   if (label) label.textContent = `Descargar ${APP_NAME}`;
-
-  // El orbe acude al botón cuando el usuario lo considera
-  a.addEventListener("pointerenter", () => {
-    const r = a.getBoundingClientRect();
-    presence.focusOn(r.left + r.width / 2, r.top + r.height / 2);
-  });
-  a.addEventListener("pointerleave", () => presence.blur());
 }
-
-// Texto pequeño junto al botón
-const fine = document.getElementById("finePrint");
-if (fine) fine.textContent = FINE_PRINT_DEFAULT;
 
 // ---------- pantalla de carga ----------
 const loader  = document.getElementById("loader");
@@ -46,7 +35,7 @@ function revealPage() {
 
 if (reduced.matches) {
   wordEl.textContent = "listo";
-  wait(350).then(revealPage);
+  wait(400).then(revealPage);
 } else {
   requestAnimationFrame(() => { fillEl.style.transform = "scaleX(1)"; });
 
@@ -58,12 +47,18 @@ if (reduced.matches) {
     void wordEl.offsetWidth; // reinicia la animación de entrada
     wordEl.textContent = LOADER_WORDS[i];
     wordEl.style.animation = "";
-  }, 600);
+  }, 900);
 
+  // La intro dura ~3 s: da tiempo a ver el fondo despertar,
+  // y espera a que el primer frame y las fuentes estén listos.
+  const MIN_MS = 2950;
   const started = performance.now();
-  const fontsReady = Promise.race([document.fonts?.ready ?? wait(0), wait(2400)]);
-  fontsReady
-    .then(() => wait(Math.max(0, 1950 - (performance.now() - started))))
+  const assets = Promise.race([
+    Promise.all([document.fonts?.ready ?? wait(0), backdrop.ready]),
+    wait(3600),
+  ]);
+  assets
+    .then(() => wait(Math.max(0, MIN_MS - (performance.now() - started))))
     .then(revealPage);
 }
 loader?.addEventListener("click", revealPage); // clic = saltar la intro
