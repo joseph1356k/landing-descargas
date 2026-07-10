@@ -8,7 +8,7 @@
 // El binario vive en /downloads del repo; se sirve desde GitHub
 // para no inflar el deploy de Vercel.
 export const DOWNLOAD_URL =
-  "https://github.com/joseph1356k/landing-descargas/raw/main/downloads/U-0.37.apk";
+  "https://github.com/joseph1356k/landing-descargas/raw/main/downloads/U-0.38.apk";
 
 // Nombre del producto — aparece en el botón y el wordmark.
 export const APP_NAME = "U";
