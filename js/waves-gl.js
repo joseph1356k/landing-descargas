@@ -45,35 +45,35 @@ void main() {
 
   // --- olas continuas: tres frecuencias superpuestas ---
   vec2 warp = vec2(
-    sin(suv.y * 6.0  + uTime * 0.60) * 0.012 +
-    sin(suv.y * 13.0 - uTime * 0.42) * 0.006 +
-    sin(suv.y * 2.2  + uTime * 0.22) * 0.014,
-    sin(suv.x * 5.0  + uTime * 0.50) * 0.010 +
-    cos(suv.x * 11.0 + uTime * 0.75) * 0.005 +
-    cos(suv.x * 2.0  - uTime * 0.18) * 0.010
+    sin(suv.y * 6.0  + uTime * 0.75) * 0.020 +
+    sin(suv.y * 13.0 - uTime * 0.50) * 0.009 +
+    sin(suv.y * 2.2  + uTime * 0.30) * 0.022,
+    sin(suv.x * 5.0  + uTime * 0.60) * 0.016 +
+    cos(suv.x * 11.0 + uTime * 0.85) * 0.008 +
+    cos(suv.x * 2.0  - uTime * 0.24) * 0.016
   ) * side;
 
   // --- la esfera flota: vaivén vertical global ---
-  float bob = sin(uTime * 0.45) * 0.008;
+  float bob = sin(uTime * 0.5) * 0.012;
 
   // --- mouse: parallax fuerte + empuje local del humo ---
-  vec2 par = uMouseN * vec2(0.055, 0.042) * (0.30 + 0.70 * side) * uPower;
+  vec2 par = uMouseN * vec2(0.085, 0.065) * (0.30 + 0.70 * side) * uPower;
   vec2 mv = vec2((suv.x - uMouseUv.x) * uAspect, suv.y - uMouseUv.y);
   float md = length(mv);
   vec2 push = (md > 0.001 ? mv / md : vec2(0.0))
-              * exp(-md * md * 14.0) * 0.020 * uPower * side;
+              * exp(-md * md * 12.0) * 0.030 * uPower * side;
 
   vec2 tuv = (suv + warp + par + push - 0.5) * uScale + 0.5 + vec2(0.0, bob);
   vec4 col = mix(texture2D(uTexA, tuv), texture2D(uTexB, tuv), uMix);
 
   // luz que acompaña el cursor, fundida en la imagen
-  col.rgb += exp(-md * md * 9.0) * 0.09 * uPower;
+  col.rgb += exp(-md * md * 9.0) * 0.12 * uPower;
 
   gl_FragColor = col;
 }`;
 
 const DPR_MAX = 1.6;
-const ZOOM = 1.12;      // margen para que la deformación nunca muestre bordes
+const ZOOM = 1.18;      // margen para que la deformación nunca muestre bordes
 const IDLE_MS = 3200;   // sin mouse → la interacción se relaja
 
 function compile(gl, type, src) {
@@ -204,7 +204,7 @@ export function createWavesGL(container, urls, { holdMs = 5500, fadeMs = 2800 } 
     cur.ny += (tgt.ny - cur.ny) * 0.06;
     cur.ux += (tgt.ux - cur.ux) * 0.10;
     cur.uy += (tgt.uy - cur.uy) * 0.10;
-    cur.power += (tgt.power - cur.power) * 0.05;
+    cur.power += (tgt.power - cur.power) * 0.07;
 
     if (mix !== mixTarget) {
       mix = Math.min(1, mix + mixStep);

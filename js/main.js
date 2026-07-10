@@ -63,7 +63,7 @@ loader?.addEventListener("click", revealPage); // clic = saltar la intro
 //  crece apenas al "engancharse" y regresa con un resorte
 //  suave al soltarlo. Un solo rAF que se apaga al asentarse.
 if (hoverable.matches) {
-  const REACH = 120, PULL = 0.22, MAX = 11;
+  const REACH = 140, PULL = 0.27, MAX = 14;
   const clamp = (v) => Math.max(-MAX, Math.min(MAX, v));
   const state = ctas.map((a) => ({ a, x: 0, y: 0, s: 1, tx: 0, ty: 0, ts: 1 }));
   let mx = 0, my = 0, raf = 0;
@@ -82,7 +82,7 @@ if (hoverable.matches) {
 
       st.tx = inside ? clamp(dx * PULL) : 0;
       st.ty = inside ? clamp(dy * PULL) : 0;
-      st.ts = inside ? 1.035 : 1;
+      st.ts = inside ? 1.05 : 1;
 
       st.x += (st.tx - st.x) * 0.16;
       st.y += (st.ty - st.y) * 0.16;
