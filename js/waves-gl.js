@@ -67,7 +67,7 @@ void main() {
   vec4 col = mix(texture2D(uTexA, tuv), texture2D(uTexB, tuv), uMix);
 
   // luz que acompaña el cursor, fundida en la imagen
-  col.rgb += exp(-md * md * 9.0) * 0.12 * uPower;
+  col.rgb += exp(-md * md * 16.0) * 0.12 * uPower;
 
   gl_FragColor = col;
 }`;
