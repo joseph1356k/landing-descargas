@@ -26,23 +26,23 @@ Luego abre `http://localhost:4321`.
 | Paleta y tipografía | `styles.css` → variables en `:root` |
 | Intensidad de la reacción al mouse | `js/backdrop.js` → multiplicadores dentro de `apply()` |
 
-## El fondo vivo (js/backdrop.js)
+## El fondo vivo (js/waves-gl.js + js/backdrop.js)
 
-Cuatro capas, de atrás hacia adelante:
+**Camino principal — WebGL**: la imagen se deforma con un shader.
+Olas sinusoidales en tres frecuencias fluyen sin fin alrededor de la
+esfera (fuertes en el humo, suaves en el centro), la esfera flota
+arriba/abajo, y el mouse dobla la imagen (parallax fuerte), empuja el
+humo localmente y lleva una luz integrada. Movimiento continuo de
+píxeles, también en móvil (el touch también deforma al arrastrar).
+Soporta varias texturas con crossfade (`BG_IMAGES`).
 
-1. **Base** — la secuencia de imágenes en crossfade lento con deriva de
-   zoom (Ken Burns). Con un solo frame, rota variantes (espejo + paneo).
-2. **Ondas** — la misma imagen duplicada con blend `screen` y una máscara
-   con hueco central: la esfera queda estable y el humo lateral reacciona
-   al mouse (desplazamiento, inclinación y elevación con inercia).
-3. **Glow** — campo de luz integrado por blend que sigue al cursor.
-4. **Velo** — gradientes que integran la imagen con el papel y protegen
-   la legibilidad del texto.
+**Fallback sin WebGL**: capas DOM — crossfade de variantes + imagen
+duplicada con blend/máscara reactiva al mouse + glow.
 
-En touch solo queda el loop base (las capas reactivas ni se pintan).
-El rAF se apaga solo cuando todo se asienta. La animación corre siempre,
-aunque el sistema tenga los efectos de animación desactivados
-(`prefers-reduced-motion` se ignora a propósito: es parte del producto).
+La animación corre siempre, aunque el sistema tenga los efectos de
+animación desactivados (`prefers-reduced-motion` se ignora a propósito:
+es parte del producto). Ajustes rápidos en el shader de `waves-gl.js`:
+amplitudes de `warp` (olas), `bob` (flotación) y `par`/`push` (mouse).
 
 ## Binarios e imágenes pesadas
 

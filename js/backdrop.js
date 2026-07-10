@@ -1,27 +1,36 @@
 // ============================================================
-//  backdrop.js — fondo vivo por capas, reactivo al mouse
+//  backdrop.js — fondo vivo
 //
-//  Capas (de atrás hacia adelante):
-//   1. Base (.bg-depth > .bg-layer ×2): la secuencia en
-//      crossfade lento. Se mueve apenas con el mouse.
-//   2. Ondas (.bg-wave ×2): la misma imagen duplicada con
-//      blend "screen" y una máscara que abre un hueco en el
-//      centro — la esfera queda estable y solo el humo lateral
-//      reacciona. Se desplazan, se inclinan y se elevan con
-//      el cursor, cada una con intensidad y sentido distintos.
-//   3. Glow (.bg-glow): campo de luz integrado por blend,
-//      sigue al cursor con inercia rápida.
+//  Camino principal: WebGL (waves-gl.js). La imagen misma se
+//  deforma: olas continuas alrededor de la esfera, la esfera
+//  flota arriba/abajo y el mouse dobla/empuja el humo con
+//  fuerza. Movimiento real de píxeles, no capas desplazadas.
 //
-//  Todo con lerp en un solo rAF que se apaga al asentarse.
-//  En touch solo queda el loop base (sin capas de mouse).
+//  Fallback (sin WebGL): el sistema de capas DOM de siempre —
+//  crossfade de variantes + ondas duplicadas con blend/máscara
+//  + glow, todo reactivo al mouse con inercia.
 // ============================================================
 
 import { BG_IMAGES, BG_HOLD_MS, BG_FADE_MS } from "./config.js";
+import { createWavesGL } from "./waves-gl.js";
 
 const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
 
-// Encuadres por los que rota la secuencia base. La esfera está
-// al centro de las imágenes, así que el espejo no la mueve.
+export function createBackdrop(root) {
+  try {
+    const gl = createWavesGL(root, BG_IMAGES, { holdMs: BG_HOLD_MS, fadeMs: BG_FADE_MS });
+    if (gl) {
+      root.classList.add("gl-on"); // oculta las capas DOM
+      return gl;
+    }
+  } catch { /* sin WebGL → capas DOM */ }
+  return createDomBackdrop(root);
+}
+
+// ------------------------------------------------------------
+//  Fallback DOM (idéntico al sistema anterior)
+// ------------------------------------------------------------
+
 const VARIANTS = [
   { flip: false, s: 1.02, x: 0,    y: 0    },
   { flip: true,  s: 1.07, x: 0.8,  y: -0.6 },
@@ -29,15 +38,15 @@ const VARIANTS = [
   { flip: true,  s: 1.05, x: 0.5,  y: 0.8  },
 ];
 
-const DRIFT = 0.05;      // crecimiento del zoom mientras un frame está visible
-const IDLE_MS = 3200;    // sin mouse → las ondas se relajan a su reposo
+const DRIFT = 0.05;
+const IDLE_MS = 3200;
 
 function transformOf(v, extraScale = 0) {
   const flip = v.flip ? " scaleX(-1)" : "";
   return `translate(${v.x}%, ${v.y}%) scale(${(v.s + extraScale).toFixed(3)})${flip}`;
 }
 
-export function createBackdrop(root) {
+function createDomBackdrop(root) {
   const layers = [...root.querySelectorAll(".bg-layer")];
   const depth  = root.querySelector(".bg-depth");
   const waves  = [...root.querySelectorAll(".bg-wave")];
@@ -47,23 +56,20 @@ export function createBackdrop(root) {
   let step = 0;
   let active = 0;
 
-  // --- precarga (la primera imagen bloquea el reveal del loader) ---
   const loadImage = (src) =>
     new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(src);
-      img.onerror = () => resolve(src); // no bloquear si una falla
+      img.onerror = () => resolve(src);
       img.src = src;
     });
 
   const ready = loadImage(BG_IMAGES[0]);
-  BG_IMAGES.slice(1).forEach(loadImage); // el resto, en segundo plano
+  BG_IMAGES.slice(1).forEach(loadImage);
 
   const frameCount = Math.max(BG_IMAGES.length, VARIANTS.length);
   const imageAt = (i) => BG_IMAGES[i % BG_IMAGES.length];
   const variantAt = (i) => VARIANTS[i % VARIANTS.length];
-
-  // ---------- loop de la secuencia base ----------
 
   function showFrame(i, instant = false) {
     const layer = layers[active];
@@ -77,13 +83,11 @@ export function createBackdrop(root) {
       return;
     }
 
-    // arranca en su encuadre inicial, sin transición…
     layer.style.transition = "none";
     layer.style.transform = transformOf(v);
     layer.style.opacity = "0";
     void layer.offsetWidth;
 
-    // …y deriva hacia su encuadre final mientras aparece
     layer.style.transition =
       `opacity ${BG_FADE_MS}ms ease, ` +
       `transform ${BG_HOLD_MS + BG_FADE_MS * 2}ms linear`;
@@ -120,10 +124,6 @@ export function createBackdrop(root) {
     document.hidden ? stop() : start();
   });
 
-  // ---------- reactividad al mouse ----------
-  //  Posición normalizada (-1..1) desde el centro → cada capa
-  //  responde con su propia intensidad, rotación e inercia.
-
   if (hoverable.matches) {
     const cur = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
     const tgt = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
@@ -132,12 +132,9 @@ export function createBackdrop(root) {
     let glowOn = false;
 
     const apply = () => {
-      // base: profundidad mínima, opuesta al cursor
       depth.style.transform =
         `translate3d(${(cur.nx * -8).toFixed(2)}px, ${(cur.ny * -6).toFixed(2)}px, 0)`;
 
-      // ondas: se desplazan y se inclinan hacia el cursor;
-      // mouse arriba → el humo se eleva (ny amplificado)
       const [a, b] = waves;
       if (a) {
         a.style.transform =
@@ -159,7 +156,7 @@ export function createBackdrop(root) {
 
     const tick = () => {
       const idle = performance.now() - lastMove > IDLE_MS;
-      if (idle) { tgt.nx = 0; tgt.ny = 0; glowOn = false; } // relajación
+      if (idle) { tgt.nx = 0; tgt.ny = 0; glowOn = false; }
 
       cur.nx += (tgt.nx - cur.nx) * 0.055;
       cur.ny += (tgt.ny - cur.ny) * 0.055;
@@ -171,7 +168,7 @@ export function createBackdrop(root) {
         idle &&
         Math.abs(tgt.nx - cur.nx) + Math.abs(tgt.ny - cur.ny) < 0.001 &&
         Math.abs(tgt.gx - cur.gx) + Math.abs(tgt.gy - cur.gy) < 0.3;
-      raf = settled ? 0 : requestAnimationFrame(tick); // se apaga al asentarse
+      raf = settled ? 0 : requestAnimationFrame(tick);
     };
 
     addEventListener("pointermove", (e) => {
@@ -184,7 +181,6 @@ export function createBackdrop(root) {
       if (!raf) raf = requestAnimationFrame(tick);
     }, { passive: true });
 
-    // si el cursor sale de la ventana, todo vuelve a reposo
     document.documentElement.addEventListener("pointerleave", () => {
       lastMove = 0;
       if (!raf) raf = requestAnimationFrame(tick);

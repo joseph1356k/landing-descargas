@@ -67,6 +67,19 @@ em { font-style: italic; }
   background: var(--paper);
 }
 
+/* canvas WebGL: la imagen deformada por olas (camino principal) */
+.bg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* con WebGL activo, las capas DOM de respaldo no se pintan */
+.backdrop.gl-on .bg-depth,
+.backdrop.gl-on .bg-waves,
+.backdrop.gl-on .bg-glow { display: none; }
+
 /* capa 1 — base: la secuencia, con profundidad mínima */
 .bg-depth {
   position: absolute;

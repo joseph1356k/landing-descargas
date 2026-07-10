@@ -58,33 +58,57 @@ assets
 
 loader?.addEventListener("click", revealPage); // clic = saltar la intro
 
-// ---------- CTA magnético (solo mouse) ----------
+// ---------- CTA magnético v2 (solo mouse) ----------
+//  Atracción con inercia real: el botón se acerca al cursor,
+//  crece apenas al "engancharse" y regresa con un resorte
+//  suave al soltarlo. Un solo rAF que se apaga al asentarse.
 if (hoverable.matches) {
-  const REACH = 90, PULL = 0.16, MAX = 8;
-  let queued = false, ev = null;
+  const REACH = 120, PULL = 0.22, MAX = 11;
+  const clamp = (v) => Math.max(-MAX, Math.min(MAX, v));
+  const state = ctas.map((a) => ({ a, x: 0, y: 0, s: 1, tx: 0, ty: 0, ts: 1 }));
+  let mx = 0, my = 0, raf = 0;
+
+  const loop = () => {
+    let live = false;
+    for (const st of state) {
+      const r = st.a.getBoundingClientRect();
+      // centro sin el desplazamiento actual (evita realimentación)
+      const cx = r.left + r.width / 2 - st.x;
+      const cy = r.top + r.height / 2 - st.y;
+      const dx = mx - cx, dy = my - cy;
+      const inside =
+        Math.abs(dx) < r.width / 2 + REACH &&
+        Math.abs(dy) < r.height / 2 + REACH;
+
+      st.tx = inside ? clamp(dx * PULL) : 0;
+      st.ty = inside ? clamp(dy * PULL) : 0;
+      st.ts = inside ? 1.035 : 1;
+
+      st.x += (st.tx - st.x) * 0.16;
+      st.y += (st.ty - st.y) * 0.16;
+      st.s += (st.ts - st.s) * 0.14;
+
+      const settled =
+        !inside &&
+        Math.abs(st.x) + Math.abs(st.y) < 0.05 &&
+        Math.abs(st.s - 1) < 0.002;
+
+      if (settled) {
+        if (st.a.style.transform) st.a.style.transform = "";
+        st.x = st.y = 0; st.s = 1;
+      } else {
+        st.a.style.transform =
+          `translate(${st.x.toFixed(2)}px, ${st.y.toFixed(2)}px) scale(${st.s.toFixed(3)})`;
+        live = true;
+      }
+    }
+    raf = live ? requestAnimationFrame(loop) : 0;
+  };
 
   addEventListener("pointermove", (e) => {
-    ev = e;
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      for (const a of ctas) {
-        const r = a.getBoundingClientRect();
-        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = ev.clientX - cx, dy = ev.clientY - cy;
-        const inside =
-          Math.abs(dx) < r.width / 2 + REACH &&
-          Math.abs(dy) < r.height / 2 + REACH;
-        if (inside) {
-          const tx = Math.max(-MAX, Math.min(MAX, dx * PULL));
-          const ty = Math.max(-MAX, Math.min(MAX, dy * PULL));
-          a.style.transform = `translate(${tx}px, ${ty}px)`;
-        } else if (a.style.transform) {
-          a.style.transform = "";
-        }
-      }
-    });
+    mx = e.clientX;
+    my = e.clientY;
+    if (!raf) raf = requestAnimationFrame(loop);
   }, { passive: true });
 }
 
