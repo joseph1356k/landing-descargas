@@ -13,12 +13,11 @@
 //      sigue al cursor con inercia rápida.
 //
 //  Todo con lerp en un solo rAF que se apaga al asentarse.
-//  En touch / reduced-motion solo queda el loop base.
+//  En touch solo queda el loop base (sin capas de mouse).
 // ============================================================
 
 import { BG_IMAGES, BG_HOLD_MS, BG_FADE_MS } from "./config.js";
 
-const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
 
 // Encuadres por los que rota la secuencia base. La esfera está
@@ -71,7 +70,7 @@ export function createBackdrop(root) {
     const v = variantAt(i);
     layer.style.backgroundImage = `url("${imageAt(i)}")`;
 
-    if (instant || reduced.matches) {
+    if (instant) {
       layer.style.transition = "none";
       layer.style.transform = transformOf(v);
       layer.style.opacity = "1";
@@ -103,7 +102,7 @@ export function createBackdrop(root) {
   }
 
   function start() {
-    if (reduced.matches || frameCount < 2) return;
+    if (frameCount < 2) return;
     if (!timer) timer = setInterval(cycle, BG_HOLD_MS + BG_FADE_MS);
   }
   function stop() {
@@ -121,17 +120,11 @@ export function createBackdrop(root) {
     document.hidden ? stop() : start();
   });
 
-  reduced.addEventListener?.("change", () => {
-    stop();
-    showFrame(step, true);
-    start();
-  });
-
   // ---------- reactividad al mouse ----------
   //  Posición normalizada (-1..1) desde el centro → cada capa
   //  responde con su propia intensidad, rotación e inercia.
 
-  if (hoverable.matches && !reduced.matches) {
+  if (hoverable.matches) {
     const cur = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
     const tgt = { nx: 0, ny: 0, gx: innerWidth / 2, gy: innerHeight / 2 };
     let raf = 0;
@@ -141,26 +134,26 @@ export function createBackdrop(root) {
     const apply = () => {
       // base: profundidad mínima, opuesta al cursor
       depth.style.transform =
-        `translate3d(${(cur.nx * -7).toFixed(2)}px, ${(cur.ny * -5).toFixed(2)}px, 0)`;
+        `translate3d(${(cur.nx * -8).toFixed(2)}px, ${(cur.ny * -6).toFixed(2)}px, 0)`;
 
       // ondas: se desplazan y se inclinan hacia el cursor;
-      // mouse arriba → el humo se eleva (ny negativo amplificado)
+      // mouse arriba → el humo se eleva (ny amplificado)
       const [a, b] = waves;
       if (a) {
         a.style.transform =
-          `translate3d(${(cur.nx * 26).toFixed(2)}px, ${(cur.ny * 20).toFixed(2)}px, 0) ` +
-          `rotate(${(cur.nx * 0.8).toFixed(3)}deg) scale(1.06)`;
+          `translate3d(${(cur.nx * 34).toFixed(2)}px, ${(cur.ny * 24).toFixed(2)}px, 0) ` +
+          `rotate(${(cur.nx * 1).toFixed(3)}deg) scale(1.06)`;
       }
       if (b) {
         b.style.transform =
-          `translate3d(${(cur.nx * -20).toFixed(2)}px, ${(cur.ny * 28).toFixed(2)}px, 0) ` +
-          `rotate(${(cur.nx * -0.55).toFixed(3)}deg) scale(1.12) scaleX(-1)`;
+          `translate3d(${(cur.nx * -26).toFixed(2)}px, ${(cur.ny * 34).toFixed(2)}px, 0) ` +
+          `rotate(${(cur.nx * -0.7).toFixed(3)}deg) scale(1.12) scaleX(-1)`;
       }
 
       if (glow) {
         glow.style.transform =
           `translate3d(${cur.gx.toFixed(1)}px, ${cur.gy.toFixed(1)}px, 0) translate(-50%, -50%)`;
-        glow.style.opacity = glowOn ? "0.5" : "0";
+        glow.style.opacity = glowOn ? "0.55" : "0";
       }
     };
 

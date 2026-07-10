@@ -28,5 +28,5 @@ export const BG_IMAGES = [
 ];
 
 // Cuánto se sostiene cada frame y cuánto dura el fundido (ms).
-export const BG_HOLD_MS = 6500;
-export const BG_FADE_MS = 3200;
+export const BG_HOLD_MS = 5500;
+export const BG_FADE_MS = 2800;

@@ -99,6 +99,13 @@ em { font-style: italic; }
 .bg-waves {
   position: absolute;
   inset: 0;
+  animation: waves-sway 13s ease-in-out infinite alternate;
+}
+
+/* vaivén autónomo: el humo se mece solo, aun sin mouse */
+@keyframes waves-sway {
+  from { transform: translate3d(-12px, 7px, 0); }
+  to   { transform: translate3d(12px, -9px, 0); }
 }
 
 .bg-wave {
@@ -141,8 +148,8 @@ em { font-style: italic; }
   transform: translate3d(-100vw, -100vh, 0);
 }
 
-/* sin mouse (touch) o con reduced-motion: solo el loop base */
-@media (hover: none), (prefers-reduced-motion: reduce) {
+/* sin mouse (touch): solo el loop base */
+@media (hover: none) {
   .bg-waves,
   .bg-glow { display: none; }
 }
@@ -603,23 +610,3 @@ main { position: relative; z-index: 2; }
   }
 }
 
-/* ---------- reduced motion ---------- */
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001s !important;
-    transition-delay: 0s !important;
-  }
-
-  .bg-breathe { animation: none; }
-
-  body.is-loading .reveal { transform: none; filter: none; }
-
-  .cue-line { animation: none; transform: none; opacity: 0.3; }
-}

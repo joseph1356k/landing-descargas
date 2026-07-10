@@ -39,8 +39,10 @@ Cuatro capas, de atrás hacia adelante:
 4. **Velo** — gradientes que integran la imagen con el papel y protegen
    la legibilidad del texto.
 
-En touch y `prefers-reduced-motion` solo queda el loop base (las capas
-reactivas ni se pintan). El rAF se apaga solo cuando todo se asienta.
+En touch solo queda el loop base (las capas reactivas ni se pintan).
+El rAF se apaga solo cuando todo se asienta. La animación corre siempre,
+aunque el sistema tenga los efectos de animación desactivados
+(`prefers-reduced-motion` se ignora a propósito: es parte del producto).
 
 ## Binarios e imágenes pesadas
 
@@ -62,7 +64,6 @@ downloads/        binario de la app (U-x.xx.apk)
 
 ## Accesibilidad y rendimiento
 
-- Respeta `prefers-reduced-motion` (fondo estático, sin animaciones).
 - Mobile first: imagen de 47 KB precargada, safe-areas para notch,
   blur reducido en el loader, área táctil generosa en el CTA.
 - Loop pausado cuando la pestaña no está visible.

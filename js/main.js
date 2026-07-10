@@ -6,7 +6,6 @@
 import { DOWNLOAD_URL, APP_NAME, LOADER_WORDS } from "./config.js";
 import { createBackdrop } from "./backdrop.js";
 
-const reduced  = matchMedia("(prefers-reduced-motion: reduce)");
 const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -33,38 +32,34 @@ function revealPage() {
   setTimeout(() => loader?.remove(), 1100);
 }
 
-if (reduced.matches) {
-  wordEl.textContent = "listo";
-  wait(400).then(revealPage);
-} else {
-  requestAnimationFrame(() => { fillEl.style.transform = "scaleX(1)"; });
+requestAnimationFrame(() => { fillEl.style.transform = "scaleX(1)"; });
 
-  let i = 0;
-  const cycle = setInterval(() => {
-    i += 1;
-    if (i >= LOADER_WORDS.length) { clearInterval(cycle); return; }
-    wordEl.style.animation = "none";
-    void wordEl.offsetWidth; // reinicia la animación de entrada
-    wordEl.textContent = LOADER_WORDS[i];
-    wordEl.style.animation = "";
-  }, 900);
+let wordIndex = 0;
+const wordCycle = setInterval(() => {
+  wordIndex += 1;
+  if (wordIndex >= LOADER_WORDS.length) { clearInterval(wordCycle); return; }
+  wordEl.style.animation = "none";
+  void wordEl.offsetWidth; // reinicia la animación de entrada
+  wordEl.textContent = LOADER_WORDS[wordIndex];
+  wordEl.style.animation = "";
+}, 900);
 
-  // La intro dura ~3 s: da tiempo a ver el fondo despertar,
-  // y espera a que el primer frame y las fuentes estén listos.
-  const MIN_MS = 2950;
-  const started = performance.now();
-  const assets = Promise.race([
-    Promise.all([document.fonts?.ready ?? wait(0), backdrop.ready]),
-    wait(3600),
-  ]);
-  assets
-    .then(() => wait(Math.max(0, MIN_MS - (performance.now() - started))))
-    .then(revealPage);
-}
+// La intro dura ~3 s: da tiempo a ver el fondo despertar,
+// y espera a que el primer frame y las fuentes estén listos.
+const MIN_MS = 2950;
+const started = performance.now();
+const assets = Promise.race([
+  Promise.all([document.fonts?.ready ?? wait(0), backdrop.ready]),
+  wait(3600),
+]);
+assets
+  .then(() => wait(Math.max(0, MIN_MS - (performance.now() - started))))
+  .then(revealPage);
+
 loader?.addEventListener("click", revealPage); // clic = saltar la intro
 
-// ---------- CTA magnético (solo mouse, sin reduced-motion) ----------
-if (hoverable.matches && !reduced.matches) {
+// ---------- CTA magnético (solo mouse) ----------
+if (hoverable.matches) {
   const REACH = 90, PULL = 0.16, MAX = 8;
   let queued = false, ev = null;
 
