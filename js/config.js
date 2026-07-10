@@ -23,8 +23,11 @@ export const LOADER_WORDS = ["despertando", "aprendiendo", "listo"];
 //  para que el fondo respire igual. Sube los archivos a
 //  assets/bg/ y usa su URL de GitHub raw para producción.
 // ------------------------------------------------------------
+// IMPORTANTE: usar raw.githubusercontent.com directo (con CORS),
+// NO github.com/raw/... (su redirección no envía cabeceras CORS
+// y la textura WebGL falla).
 export const BG_IMAGES = [
-  "https://github.com/joseph1356k/landing-descargas/raw/main/assets/bg/orb-1.jpg",
+  "https://raw.githubusercontent.com/joseph1356k/landing-descargas/main/assets/bg/orb-1.jpg",
 ];
 
 // Cuánto se sostiene cada frame y cuánto dura el fundido (ms).

@@ -128,6 +128,10 @@ export function createWavesGL(container, urls, { holdMs = 5500, fadeMs = 2800 } 
   gl.uniform1i(U.uTexA, 0);
   gl.uniform1i(U.uTexB, 1);
 
+  // nunca negro: el lienzo arranca del color del papel
+  gl.clearColor(0.929, 0.937, 0.957, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   const makeTex = () => {
     const t = gl.createTexture();
@@ -242,6 +246,12 @@ export function createWavesGL(container, urls, { holdMs = 5500, fadeMs = 2800 } 
   container.prepend(canvas);
   resize();
 
+  const destroy = () => {
+    stop();
+    clearInterval(cycleTimer);
+    canvas.remove();
+  };
+
   const ready = loadImage(urls[0]).then((img) => {
     imgW = img.naturalWidth; imgH = img.naturalHeight;
     upload(texA, img);
@@ -253,6 +263,7 @@ export function createWavesGL(container, urls, { holdMs = 5500, fadeMs = 2800 } 
     startCycle();
     return urls[0];
   });
+  // si la textura falla (CORS, red), el caller decide el fallback
 
-  return { ready, destroy: () => { stop(); clearInterval(cycleTimer); } };
+  return { ready, destroy };
 }

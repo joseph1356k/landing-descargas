@@ -46,16 +46,22 @@ const wordCycle = setInterval(() => {
 
 // La intro dura ~3 s: da tiempo a ver el fondo despertar,
 // y espera a que el primer frame y las fuentes estén listos.
+// Pase lo que pase (imagen caída, fuente lenta, promesa
+// rechazada), la página SIEMPRE se revela.
 const MIN_MS = 2950;
 const started = performance.now();
 const assets = Promise.race([
-  Promise.all([document.fonts?.ready ?? wait(0), backdrop.ready]),
+  Promise.all([
+    document.fonts?.ready ?? wait(0),
+    Promise.resolve(backdrop.ready).catch(() => {}),
+  ]),
   wait(3600),
 ]);
 assets
   .then(() => wait(Math.max(0, MIN_MS - (performance.now() - started))))
-  .then(revealPage);
+  .then(revealPage, revealPage);
 
+setTimeout(revealPage, 5200);                  // red de seguridad absoluta
 loader?.addEventListener("click", revealPage); // clic = saltar la intro
 
 // ---------- CTA magnético v2 (solo mouse) ----------

@@ -21,7 +21,15 @@ export function createBackdrop(root) {
     const gl = createWavesGL(root, BG_IMAGES, { holdMs: BG_HOLD_MS, fadeMs: BG_FADE_MS });
     if (gl) {
       root.classList.add("gl-on"); // oculta las capas DOM
-      return gl;
+      // Si la textura no carga (CORS, red, bloqueadores), se
+      // desmonta el canvas y entran las capas DOM sin dejar
+      // la página colgada.
+      const ready = gl.ready.catch(() => {
+        gl.destroy();
+        root.classList.remove("gl-on");
+        return createDomBackdrop(root).ready;
+      });
+      return { ready, destroy: gl.destroy };
     }
   } catch { /* sin WebGL → capas DOM */ }
   return createDomBackdrop(root);
